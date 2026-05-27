@@ -522,25 +522,49 @@ csv_path = find_csv_path()
 if csv_path is not None:
     df_raw = load_data(csv_path)
 else:
-    uploaded_file = st.file_uploader(
-        "Upload the IPL dataset CSV file",
-        type=["csv"],
-        help="If the dataset is not stored locally, upload it here."
-    )
-    if uploaded_file is not None:
-        df_raw = load_data(uploaded_file)
-    else:
-        st.error(
-            "Dataset not found. Please place the file at one of the expected paths or upload it using the uploader below."
+    st.error("Dataset not found locally.")
+    st.markdown("### 3 ways to provide the dataset:")
+    
+    tab1, tab2, tab3 = st.tabs(["📂 Upload CSV", "🔗 From URL", "📍 Local Path"])
+    
+    with tab1:
+        uploaded_file = st.file_uploader(
+            "Upload the IPL dataset CSV file",
+            type=["csv"],
+            help="Upload the dataset directly from your computer."
         )
+        if uploaded_file is not None:
+            df_raw = load_data(uploaded_file)
+        else:
+            df_raw = None
+    
+    with tab2:
         st.markdown(
-            "**Expected paths:**<br>"
+            "Paste a public CSV URL (Google Drive, Dropbox, GitHub raw, etc.):\n\n"
+            "**Google Drive example:** `https://drive.google.com/uc?export=download&id=YOUR_FILE_ID`\n\n"
+            "**Dropbox example:** `https://dl.dropboxusercontent.com/...`"
+        )
+        csv_url = st.text_input("CSV URL:", placeholder="https://...")
+        if csv_url:
+            try:
+                df_raw = load_data(csv_url)
+                st.success("✅ Dataset loaded from URL!")
+            except Exception as e:
+                st.error(f"Failed to load from URL: {e}")
+                df_raw = None
+        else:
+            df_raw = None
+    
+    with tab3:
+        st.markdown(
+            "**Expected local paths:**<br>"
             f"- `{os.getcwd()}\\att_0_1778303821_c3a907.csv`<br>"
             f"- `{os.getcwd()}\\data\\att_0_1778303821_c3a907.csv`<br>"
             f"- `{os.path.expanduser('~\\Downloads')}\\att_0_1778303821_c3a907.csv`<br>"
             f"- `c:\\Users\\VICTUS\\Downloads\\att_0_1778303821_c3a907.csv`",
             unsafe_allow_html=True,
         )
+        st.info("Place the CSV file in one of these folders and restart the app.")
         df_raw = None
 
 if df_raw is not None:
