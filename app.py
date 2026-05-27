@@ -461,15 +461,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Helper: resolve the CSV dataset path from common locations
+# Helper: check for local CSV (dev environment)
 def find_csv_path():
+    import os
     candidate_paths = [
+        os.path.join(os.getcwd(), "ipl_data.csv"),
+        os.path.join(os.getcwd(), "data", "ipl_data.csv"),
         os.path.join(os.getcwd(), "att_0_1778303821_c3a907.csv"),
         os.path.join(os.getcwd(), "data", "att_0_1778303821_c3a907.csv"),
         os.path.expanduser(r"~\Downloads\att_0_1778303821_c3a907.csv"),
         r'c:\Users\VICTUS\Downloads\att_0_1778303821_c3a907.csv',
+        '/mount/src/cricket_ipl26/ipl_data.csv',
+        '/mount/src/cricket_ipl26/data/ipl_data.csv',
         '/mount/src/cricket_ipl26/att_0_1778303821_c3a907.csv',
-        '/mount/src/cricket_ipl26/data/att_0_1778303821_c3a907.csv'
     ]
     for path in candidate_paths:
         if os.path.exists(path):
@@ -491,81 +495,69 @@ def load_data(csv_source):
             return int(x[:4])
         try:
             return int(float(x))
-        except:
-            # Let's map any other string to integer if possible, else return it
+        except Exception:
             return x
-            
+
     df['season_clean'] = df['season'].apply(clean_season)
-    
-    # Standardize season labels for user display
-    # Map 2007 to "2008 (Season 1)" and keep others as years
+
     def get_season_display(year):
         if year == 2007:
             return "2008"
         return str(year)
-        
+
     df['season_display'] = df['season_clean'].apply(get_season_display)
-    
-    # Define match phases
-    # Powerplay: 0.1 to 5.6 overs (i.e. overs 0 to 5)
-    # Middle Overs: 6.1 to 14.6 overs (i.e. overs 6 to 14)
-    # Death Overs: 15.1 to 19.6 overs (i.e. overs 15 to 19)
+
     def get_phase(over):
         if over <= 5: return 'Powerplay'
         elif over <= 14: return 'Middle Overs'
         else: return 'Death Overs'
-        
+
     df['phase'] = df['over'].apply(get_phase)
     return df
 
-csv_path = find_csv_path()
-if csv_path is not None:
-    df_raw = load_data(csv_path)
-else:
-    st.error("Dataset not found locally.")
-    st.markdown("### 3 ways to provide the dataset:")
-    
-    tab1, tab2, tab3 = st.tabs(["📂 Upload CSV", "🔗 From URL", "📍 Local Path"])
-    
-    with tab1:
-        uploaded_file = st.file_uploader(
-            "Upload the IPL dataset CSV file",
-            type=["csv"],
-            help="Upload the dataset directly from your computer."
-        )
-        if uploaded_file is not None:
-            df_raw = load_data(uploaded_file)
-        else:
-            df_raw = None
-    
-    with tab2:
-        st.markdown(
-            "Paste a public CSV URL (Google Drive, Dropbox, GitHub raw, etc.):\n\n"
-            "**Google Drive example:** `https://drive.google.com/uc?export=download&id=YOUR_FILE_ID`\n\n"
-            "**Dropbox example:** `https://dl.dropboxusercontent.com/...`"
-        )
-        csv_url = st.text_input("CSV URL:", placeholder="https://...")
-        if csv_url:
-            try:
-                df_raw = load_data(csv_url)
-                st.success("✅ Dataset loaded from URL!")
-            except Exception as e:
-                st.error(f"Failed to load from URL: {e}")
-                df_raw = None
-        else:
-            df_raw = None
-    
-    with tab3:
-        st.markdown(
-            "**Expected local paths:**<br>"
-            f"- `{os.getcwd()}\\att_0_1778303821_c3a907.csv`<br>"
-            f"- `{os.getcwd()}\\data\\att_0_1778303821_c3a907.csv`<br>"
-            f"- `{os.path.expanduser('~\\Downloads')}\\att_0_1778303821_c3a907.csv`<br>"
-            f"- `c:\\Users\\VICTUS\\Downloads\\att_0_1778303821_c3a907.csv`",
-            unsafe_allow_html=True,
-        )
-        st.info("Place the CSV file in one of these folders and restart the app.")
-        df_raw = None
+
+@st.cache_data(show_spinner=False)
+def fetch_dataset():
+    """Auto-fetch the IPL dataset — tries local first, then public URLs."""
+    import io, urllib.request
+
+    local = find_csv_path()
+    if local:
+        return load_data(local)
+
+    URLS = [
+        "https://raw.githubusercontent.com/patelpushpraj35-cell/cricket_ipl26/main/data/ipl_data.csv",
+        # well-known public mirror
+        "https://raw.githubusercontent.com/ritesh-ojha/IPL-Dataset/main/deliveries.csv",
+    ]
+    for url in URLS:
+        try:
+            with urllib.request.urlopen(url, timeout=30) as resp:
+                raw = resp.read()
+            df_test = pd.read_csv(io.BytesIO(raw), low_memory=False, nrows=5)
+            if len(df_test.columns) > 5:
+                return load_data(io.BytesIO(raw))
+        except Exception:
+            continue
+    return None
+
+
+# ── Auto-load dataset (no upload needed) ─────────────────────────────────────
+_ph = st.empty()
+with _ph.container():
+    st.info("\u23f3 Loading IPL dataset\u2026 first load takes a few seconds.")
+df_raw = fetch_dataset()
+_ph.empty()
+
+if df_raw is None:
+    st.error("\u274c Could not load the IPL dataset automatically.")
+    st.markdown("""
+**To fix this**, add the dataset to the repository:
+1. Download the IPL ball-by-ball CSV from Kaggle / Cricsheet.
+2. Rename it to `ipl_data.csv` and place in the `data/` folder.
+3. Commit & push: `git add data/ipl_data.csv && git commit -m 'Add dataset' && git push`
+""")
+    st.stop()
 
 if df_raw is not None:
     # Sidebar navigation & filters
@@ -1491,5 +1483,3 @@ if df_raw is not None:
             </div>
             """, unsafe_allow_html=True)
 
-else:
-    st.info("Please verify the dataset is placed at `c:\\Users\\VICTUS\\Downloads\\att_0_1778303821_c3a907.csv` to run the analysis.")

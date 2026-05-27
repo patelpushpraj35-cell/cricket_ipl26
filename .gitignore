@@ -17,9 +17,9 @@ env/
 # Streamlit
 .streamlit/secrets.toml
 
-# Data files (large CSV - do not commit)
-*.csv
+# Data files - ignore raw downloads but allow the repo dataset
 att_0_*.csv
+# data/ipl_data.csv is intentionally tracked (use git lfs)
 
 # Patch helper scripts
 _patch_*.py
