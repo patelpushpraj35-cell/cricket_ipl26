@@ -461,16 +461,27 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Helper: resolve the CSV dataset path from common locations
+def find_csv_path():
+    candidate_paths = [
+        os.path.join(os.getcwd(), "att_0_1778303821_c3a907.csv"),
+        os.path.join(os.getcwd(), "data", "att_0_1778303821_c3a907.csv"),
+        os.path.expanduser(r"~\Downloads\att_0_1778303821_c3a907.csv"),
+        r'c:\Users\VICTUS\Downloads\att_0_1778303821_c3a907.csv'
+    ]
+    for path in candidate_paths:
+        if os.path.exists(path):
+            return path
+    return None
+
 # Cache data loading for performance
 @st.cache_data
-def load_data():
-    csv_path = r'c:\Users\VICTUS\Downloads\att_0_1778303821_c3a907.csv'
-    if not os.path.exists(csv_path):
-        st.error(f"Dataset not found at {csv_path}. Please place the CSV file in the designated path.")
-        return None
-        
-    df = pd.read_csv(csv_path, low_memory=False)
-    
+def load_data(csv_source):
+    if isinstance(csv_source, str):
+        df = pd.read_csv(csv_source, low_memory=False)
+    else:
+        df = pd.read_csv(csv_source, low_memory=False)
+
     # Clean season column
     def clean_season(x):
         x = str(x).strip()
@@ -505,7 +516,30 @@ def load_data():
     df['phase'] = df['over'].apply(get_phase)
     return df
 
-df_raw = load_data()
+csv_path = find_csv_path()
+if csv_path is not None:
+    df_raw = load_data(csv_path)
+else:
+    uploaded_file = st.file_uploader(
+        "Upload the IPL dataset CSV file",
+        type=["csv"],
+        help="If the dataset is not stored locally, upload it here."
+    )
+    if uploaded_file is not None:
+        df_raw = load_data(uploaded_file)
+    else:
+        st.error(
+            "Dataset not found. Please place the file at one of the expected paths or upload it using the uploader below."
+        )
+        st.markdown(
+            "**Expected paths:**<br>"
+            f"- `{os.getcwd()}\\att_0_1778303821_c3a907.csv`<br>"
+            f"- `{os.getcwd()}\\data\\att_0_1778303821_c3a907.csv`<br>"
+            f"- `{os.path.expanduser('~\\Downloads')}\\att_0_1778303821_c3a907.csv`<br>"
+            f"- `c:\\Users\\VICTUS\\Downloads\\att_0_1778303821_c3a907.csv`",
+            unsafe_allow_html=True,
+        )
+        df_raw = None
 
 if df_raw is not None:
     # Sidebar navigation & filters

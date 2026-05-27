@@ -19,7 +19,11 @@
 ## 📊 Dataset
 
 - **Ball-by-ball IPL data** — 280,000+ deliveries across 1,200+ matches (2008–2026)
-- Place the CSV at: `c:\Users\VICTUS\Downloads\att_0_1778303821_c3a907.csv`  
+- Place the CSV at one of the repository-relative paths below, or upload it when you run the app:
+  - `./att_0_1778303821_c3a907.csv`
+  - `./data/att_0_1778303821_c3a907.csv`
+  - `%USERPROFILE%\Downloads\att_0_1778303821_c3a907.csv`
+  - `c:\Users\VICTUS\Downloads\att_0_1778303821_c3a907.csv`
   *(not committed to repo due to file size)*
 
 ---
