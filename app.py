@@ -467,7 +467,9 @@ def find_csv_path():
         os.path.join(os.getcwd(), "att_0_1778303821_c3a907.csv"),
         os.path.join(os.getcwd(), "data", "att_0_1778303821_c3a907.csv"),
         os.path.expanduser(r"~\Downloads\att_0_1778303821_c3a907.csv"),
-        r'c:\Users\VICTUS\Downloads\att_0_1778303821_c3a907.csv'
+        r'c:\Users\VICTUS\Downloads\att_0_1778303821_c3a907.csv',
+        '/mount/src/cricket_ipl26/att_0_1778303821_c3a907.csv',
+        '/mount/src/cricket_ipl26/data/att_0_1778303821_c3a907.csv'
     ]
     for path in candidate_paths:
         if os.path.exists(path):
