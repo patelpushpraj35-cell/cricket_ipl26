@@ -655,18 +655,18 @@ def find_data_path():
     return None
 
 @st.cache_data
-def load_data(data_source):
-    if isinstance(data_source, str) and data_source.endswith('.parquet'):
-        df = pd.read_parquet(data_source)
-    elif isinstance(data_source, str):
-        df = pd.read_csv(data_source, low_memory=False)
+def load_data(_data_source):
+    if isinstance(_data_source, str) and _data_source.endswith('.parquet'):
+        df = pd.read_parquet(_data_source)
+    elif isinstance(_data_source, str):
+        df = pd.read_csv(_data_source, low_memory=False)
     else:
         # BytesIO
         try:
-            df = pd.read_parquet(data_source)
+            df = pd.read_parquet(_data_source)
         except:
-            data_source.seek(0)
-            df = pd.read_csv(data_source, low_memory=False)
+            _data_source.seek(0)
+            df = pd.read_csv(_data_source, low_memory=False)
 
     # Clean season column
     def clean_season(x):
