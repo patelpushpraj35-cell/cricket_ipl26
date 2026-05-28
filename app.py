@@ -638,48 +638,47 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Helper: check for local CSV (dev environment)
-def find_csv_path():
+# Helper: check for local Parquet/CSV
+def find_data_path():
     import os
     candidate_paths = [
-        os.path.join(os.getcwd(), "ipl_data.csv"),
+        os.path.join(os.getcwd(), "data", "ipl_data.parquet"),
+        os.path.join(os.getcwd(), "ipl_data.parquet"),
+        '/mount/src/cricket_ipl26/data/ipl_data.parquet',
         os.path.join(os.getcwd(), "data", "ipl_data.csv"),
-        os.path.join(os.getcwd(), "att_0_1778303821_c3a907.csv"),
-        os.path.join(os.getcwd(), "data", "att_0_1778303821_c3a907.csv"),
-        os.path.expanduser(r"~\Downloads\att_0_1778303821_c3a907.csv"),
-        r'c:\Users\VICTUS\Downloads\att_0_1778303821_c3a907.csv',
-        '/mount/src/cricket_ipl26/ipl_data.csv',
+        os.path.join(os.getcwd(), "ipl_data.csv"),
         '/mount/src/cricket_ipl26/data/ipl_data.csv',
-        '/mount/src/cricket_ipl26/att_0_1778303821_c3a907.csv',
     ]
     for path in candidate_paths:
         if os.path.exists(path):
             return path
     return None
 
-# Cache data loading for performance
 @st.cache_data
-def load_data(csv_source):
-    if isinstance(csv_source, str):
-        df = pd.read_csv(csv_source, low_memory=True, dtype={"inning": "int8", "over": "int8", "ball": "int8", "runs_batter": "int8", "runs_extras": "int8", "runs_total": "int8", "wides": "int8", "noballs": "int8", "byes": "int8", "legbyes": "int8"})
+def load_data(data_source):
+    if isinstance(data_source, str) and data_source.endswith('.parquet'):
+        df = pd.read_parquet(data_source)
+    elif isinstance(data_source, str):
+        df = pd.read_csv(data_source, low_memory=False)
     else:
-        df = pd.read_csv(csv_source, low_memory=False)
+        # BytesIO
+        try:
+            df = pd.read_parquet(data_source)
+        except:
+            data_source.seek(0)
+            df = pd.read_csv(data_source, low_memory=False)
 
     # Clean season column
     def clean_season(x):
         x = str(x).strip()
-        if '/' in x:
-            return int(x[:4])
-        try:
-            return int(float(x))
-        except Exception:
-            return x
+        if '/' in x: return int(x[:4])
+        try: return int(float(x))
+        except: return x
 
     df['season_clean'] = df['season'].apply(clean_season)
 
     def get_season_display(year):
-        if year == 2007:
-            return "2008"
+        if year == 2007: return "2008"
         return str(year)
 
     df['season_display'] = df['season_clean'].apply(get_season_display)
@@ -692,32 +691,26 @@ def load_data(csv_source):
     df['phase'] = df['over'].apply(get_phase)
     return df
 
-
 @st.cache_data(show_spinner=False)
 def fetch_dataset():
-    """Auto-fetch the IPL dataset — tries local first, then public URLs."""
     import io, urllib.request
 
-    local = find_csv_path()
+    local = find_data_path()
     if local:
         return load_data(local)
 
     URLS = [
-        "https://raw.githubusercontent.com/patelpushpraj35-cell/cricket_ipl26/main/data/ipl_data.csv",
-        # well-known public mirror
-        "https://raw.githubusercontent.com/ritesh-ojha/IPL-Dataset/main/deliveries.csv",
+        "https://raw.githubusercontent.com/patelpushpraj35-cell/cricket_ipl26/main/data/ipl_data.parquet",
+        "https://raw.githubusercontent.com/ritesh-ojha/IPL-Dataset/main/deliveries.csv"
     ]
     for url in URLS:
         try:
             with urllib.request.urlopen(url, timeout=30) as resp:
                 raw = resp.read()
-            df_test = pd.read_csv(io.BytesIO(raw), low_memory=False, nrows=5)
-            if len(df_test.columns) > 5:
-                return load_data(io.BytesIO(raw))
-        except Exception:
+            return load_data(io.BytesIO(raw))
+        except Exception as e:
             continue
     return None
-
 
 # ── Auto-load dataset (no upload needed) ─────────────────────────────────────
 _ph = st.empty()
