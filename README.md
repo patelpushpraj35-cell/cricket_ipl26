@@ -69,7 +69,7 @@ cricke1234567/
 
 **Pushpraj Patel**  
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://www.linkedin.com/in/pushpraj-patel-16a2843b4/)
-[![GitHub](https://img.shields.io/badge/GitHub-Repo-black?logo=github)](https://github.com/patelpushpraj35-cell/Cricket_IPL_Crunch-26)
+[![GitHub](https://img.shields.io/badge/GitHub-Repo-black?logo=github)](https://github.com/patelpushpraj35-cell/cricket_ipl26)
 
 ---
 

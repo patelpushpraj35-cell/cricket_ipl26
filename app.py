@@ -667,7 +667,7 @@ if df_raw is not None:
             </div>
         </a>
         <p style="color: var(--text-color); opacity:0.4; font-size:0.68rem; margin:8px 0 0 0;">🏏 IPL Crunch &rsquo;26 Analytics</p>
-        <a href="https://github.com/patelpushpraj35-cell/Cricket_IPL_Crunch-26" target="_blank"
+        <a href="https://github.com/patelpushpraj35-cell/cricket_ipl26" target="_blank"
            style="color:rgba(128,128,128,0.6); font-size:0.7rem; text-decoration:none;">
            ⭐ GitHub Repo
         </a>
