@@ -27,30 +27,36 @@ st.markdown("""
         color: var(--text-color) !important;
     }
     
-    /* Hide Deploy button and header menu */
-    [data-testid="stHeader"] {
-        display: none !important;
+    /* Hide Deploy button but keep hamburger menu for sidebar */
+    [data-testid="stToolbar"] {
+        visibility: hidden !important;
     }
     
-    /* Add padding to compensate for hidden header */
+    [data-testid="stHeader"] {
+        background-color: transparent !important;
+    }
+    
+    /* Add padding to compensate for header */
     [data-testid="block-container"] {
-        padding-top: 4rem !important;
+        padding-top: 2rem !important;
     }
     
     /* Sleek card container */
     .glass-card {
-        background-color: var(--secondary-background-color);
-        border: 1px solid rgba(128, 128, 128, 0.2);
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        background: var(--glass-bg, rgba(255, 255, 255, 0.04));
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px 0 var(--glass-shadow, rgba(0, 0, 0, 0.15));
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .glass-card:hover {
         border-color: var(--primary-color, #10B981);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.2);
     }
     
     .card-title {
@@ -71,11 +77,15 @@ st.markdown("""
     
     /* Metrics customization */
     div[data-testid="stMetric"] {
-        background-color: var(--secondary-background-color);
-        border: 1px solid rgba(128, 128, 128, 0.2);
-        border-radius: 10px;
-        padding: 15px;
+        background: var(--glass-bg, rgba(255, 255, 255, 0.03));
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+        border-radius: 16px;
+        padding: 18px 24px;
         text-align: center;
+        box-shadow: 0 4px 15px var(--glass-shadow, rgba(0, 0, 0, 0.1));
+        transition: all 0.3s ease;
     }
     div[data-testid="stMetricValue"] *, div[data-testid="stMetricValue"] {
         color: var(--primary-color, #10B981) !important;
@@ -458,6 +468,173 @@ st.markdown("""
         animation: slideInLeft 0.5s ease both;
     }
 
+
+    /* ===================== ANIMATIONS ===================== */
+
+    /* 1. Fade-up: used for cards, metrics, callout boxes */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    /* 2. Slide in from left */
+    @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-30px); }
+        to   { opacity: 1; transform: translateX(0);     }
+    }
+
+    /* 3. Slide in from right */
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(30px); }
+        to   { opacity: 1; transform: translateX(0);    }
+    }
+
+    /* 4. Shimmer: sweeping highlight for the header gradient */
+    @keyframes shimmer {
+        0%   { background-position: -200% center; }
+        100% { background-position:  200% center; }
+    }
+
+    /* 5. Pulse glow: for the highlight banner border */
+    @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.0); }
+        50%       { box-shadow: 0 0 18px 6px rgba(16, 185, 129, 0.25); }
+    }
+
+    /* 6. Grow-in: for phase bar fill (width 0 → actual) */
+    @keyframes growWidth {
+        from { width: 0 !important; }
+        to   { width: var(--bar-w); }
+    }
+
+    /* 7. Float: gentle up-down bob for the cricket ball emoji */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px);  }
+        50%       { transform: translateY(-6px); }
+    }
+
+    /* 8. Scale-in: pop-in for metrics */
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.85); }
+        to   { opacity: 1; transform: scale(1);    }
+    }
+
+    /* ===================== APPLY ANIMATIONS ===================== */
+
+    /* Gradient header — animated shimmer text */
+    .gradient-header {
+        background: linear-gradient(90deg, #10B981, #3B82F6, #10B981, #F59E0B, #10B981);
+        background-size: 300% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 4s linear infinite;
+    }
+
+    /* Subtitle fades up */
+    .gradient-subtitle {
+        animation: fadeInUp 0.7s ease both;
+        animation-delay: 0.2s;
+    }
+
+    /* Header line slides in */
+    .header-line {
+        animation: slideInLeft 0.8s ease both;
+        animation-delay: 0.3s;
+    }
+
+    /* Glass cards: fade up on load, with stagger via nth-child */
+    .glass-card {
+        animation: fadeInUp 0.6s ease both;
+    }
+    .glass-card:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 0 12px 30px rgba(16, 185, 129, 0.2);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Metric cards: scale pop-in */
+    div[data-testid="stMetric"] {
+        animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    div[data-testid="stMetric"]:nth-child(1) { animation-delay: 0.0s; }
+    div[data-testid="stMetric"]:nth-child(2) { animation-delay: 0.15s; }
+    div[data-testid="stMetric"]:nth-child(3) { animation-delay: 0.3s; }
+    div[data-testid="stMetric"]:hover {
+        transform: translateY(-3px) scale(1.03);
+        border-color: var(--primary-color, #10B981) !important;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2) !important;
+        transition: all 0.25s ease;
+    }
+
+    /* Highlight banner: pulse glow + fade up */
+    .highlight-banner {
+        animation: fadeInUp 0.7s ease both, pulseGlow 3s ease-in-out infinite;
+        animation-delay: 0.1s, 1s;
+    }
+
+    /* Plain-explain callout: slide in from left */
+    .plain-explain {
+        animation: slideInLeft 0.5s ease both;
+        animation-delay: 0.15s;
+    }
+
+    /* Fun-fact box: slide in from right */
+    .fun-fact-box {
+        animation: slideInRight 0.5s ease both;
+        animation-delay: 0.2s;
+    }
+
+    /* Phase bar fills: grow from 0 */
+    .phase-bar-fill {
+        animation: growWidth 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+        animation-delay: 0.3s;
+    }
+
+    /* Plotly chart containers: fade up */
+    [data-testid="stPlotlyChart"] {
+        animation: fadeInUp 0.65s ease both;
+    }
+
+    /* Dataframe: fade in */
+    [data-testid="stDataFrame"] {
+        animation: fadeInUp 0.5s ease both;
+    }
+
+    /* Tab content area: smooth cross-fade */
+    [data-testid="stTabsContent"] > div {
+        animation: fadeInUp 0.45s ease both;
+    }
+
+    /* Tab buttons: smooth color/scale on hover */
+    .stTabs [data-baseweb="tab"] {
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Sidebar items fade in */
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] .stSelectbox,
+    [data-testid="stSidebar"] .stSlider {
+        animation: fadeInUp 0.5s ease both;
+    }
+
+    /* Selectboxes: smooth border on focus */
+    div[data-baseweb="select"] > div {
+        transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+    }
+    div[data-baseweb="select"] > div:hover {
+        border-color: #10B981 !important;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15) !important;
+    }
+
+    /* Subheader sections: slide in */
+    h2, h3 {
+        animation: slideInLeft 0.5s ease both;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -582,6 +759,9 @@ if df_raw is not None:
                 --background-color: #0E1117;
                 --secondary-background-color: #1F2937;
                 --primary-color: #10B981;
+                --glass-bg: rgba(255, 255, 255, 0.03);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --glass-shadow: rgba(0, 0, 0, 0.2);
             }
             html, body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], [data-testid="stHeader"] {
                 background-color: #0E1117 !important;
@@ -611,6 +791,9 @@ if df_raw is not None:
                 --background-color: #F9FAFB;
                 --secondary-background-color: #FFFFFF;
                 --primary-color: #10B981;
+                --glass-bg: rgba(255, 255, 255, 0.6);
+                --glass-border: rgba(0, 0, 0, 0.08);
+                --glass-shadow: rgba(0, 0, 0, 0.05);
             }
             html, body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], [data-testid="stHeader"] {
                 background-color: #F9FAFB !important;
