@@ -28,12 +28,27 @@ st.markdown("""
     }
     
     /* Hide Deploy button but keep hamburger menu for sidebar */
+    .stDeployButton {
+        display: none !important;
+    }
     [data-testid="stToolbar"] {
         visibility: hidden !important;
     }
-    
     [data-testid="stHeader"] {
         background-color: transparent !important;
+        visibility: visible !important;
+        display: block !important;
+    }
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        color: var(--primary-color, #10B981) !important;
+        background: rgba(16, 185, 129, 0.2) !important;
+        border-radius: 50% !important;
+        z-index: 999999 !important;
+    }
+    [data-testid="collapsedControl"] svg {
+        fill: var(--primary-color, #10B981) !important;
     }
     
     /* Add padding to compensate for header */
